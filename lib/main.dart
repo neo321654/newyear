@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
@@ -37,6 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     _controller = VideoPlayerController.asset('assets/Butterfly-209.mp4');
+    startTimer();
   }
 
   void addCommand() {
@@ -50,9 +53,47 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       var res = getLastCommandFromServer();
       res.then((value) {
+        if(value.body == "13</br>doodle</br>fieldtext</br>"){
+          // _controller.pause();
+          print("true");
+        }else{
+         // _controller.value.isPlaying ? _controller.pause();
+          print("needpause");
+          _controller.pause();
+        }
+
         print(value.body);
       });
     });
+  }
+
+  late Timer _timer;
+  int _start = 100;
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+          (Timer timer) {
+            getLastCommand();
+        print(_start);
+        if (_start == 0) {
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   Future<http.Response> addCommandToServer(String title) {
